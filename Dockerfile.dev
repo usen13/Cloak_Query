@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /workspace/cloak_query
 
 # Cloning the path-oram-base repository if needed
-RUN git clone https://github.com/usen13/path-oram-base.git .
+RUN git clone https://github.com/usen13/Cloak_Query.git .
 
 # ...existing code...
 CMD ["tail", "-f", "/dev/null"]
