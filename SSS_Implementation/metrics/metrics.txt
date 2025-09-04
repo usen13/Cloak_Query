@@ -1,0 +1,4 @@
+Encrypt: Time taken to create secret shares: 23.6284 seconds
+Encrypt: Time taken to create secret shares: 25.1358 seconds
+Encrypt: Time taken to create secret shares: 23.6775 seconds
+Encrypt: Time taken to create secret shares: 26.024 seconds

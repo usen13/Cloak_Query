@@ -1,0 +1,3 @@
+SELECT MAX(EXTENDEDPRICE) AS max_extended_price
+FROM lineitem
+WHERE SHIPMODE = 'SHIP' OR LINESTATUS = 'F';

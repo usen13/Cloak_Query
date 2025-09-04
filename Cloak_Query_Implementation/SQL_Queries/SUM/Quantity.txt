@@ -1,0 +1,3 @@
+SELECT SUM(QUANTITY) AS total_quantity
+FROM lineitem
+WHERE SHIPMODE = 'SHIP' AND LINESTATUS = 'F';
