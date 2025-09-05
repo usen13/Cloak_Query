@@ -7,8 +7,8 @@ Both setups provide two Bash scripts each:
 - Data_Outsourcing.sh — builds and encrypts the input table to generate secret shares.
 - Query_Processing.sh — builds and runs server/query tests (including aggregation queries).
 
-+ **WARNING: You must run Data_Outsourcing.sh before running Query_Processing.sh (for both implementations).**
-+ If you do not run Data_Outsourcing.sh first, the implementation will not work and will cause errors (e.g., missing shares/backups, file-not-found failures).
+**WARNING: You must run Data_Outsourcing.sh before running Query_Processing.sh (for both implementations).**
+If you do not run Data_Outsourcing.sh first, the implementation will not work and will cause errors (e.g., missing shares/backups, file-not-found failures).
 
 ## Run with Docker (recommended for a clean toolchain)
 
@@ -21,17 +21,7 @@ docker build -f Dockerfile.dev -t |your docker image name| .
 # docker build --no-cache -f Dockerfile.dev -t |your docker image name| .
 ```
 
-Run the container (mount the repo and match your host UID/GID so files aren’t root-owned):
-```bash
-cd /path/to/Cloak_Query   # repo root
-docker run -it --rm \
-  -v "$PWD":/workspace/cloak_query \
-  -w /workspace/cloak_query \
-  --user "$(id -u)":"$(id -g)" \
-  cloak_query:dev bash
-```
-
-Inside the container, run the scripts as usual:
+Once built launch your container and run the scripts as usual:
 ```bash
 # Generate shares (Path ORAM)
 chmod +x Cloak_Query_Implementation/Data_Outsourcing.sh
@@ -48,7 +38,8 @@ SSS_Implementation/Data_Outsourcing.sh
 chmod +x SSS_Implementation/Query_Processing.sh
 SSS_Implementation/Query_Processing.sh
 ```
-+ Note: **Run Data_Outsourcing.sh first**. Skipping it will result in errors during Query_Processing.sh because required shares/backup files won’t exist.
+
+Note: **Run Data_Outsourcing.sh first**. Skipping it will result in errors during Query_Processing.sh because required shares/backup files won’t exist.
 
 Details on individual implementations follow below:
 ## Data Outsourcing (generate shares)
@@ -91,7 +82,7 @@ What it does:
 - Creates backups for each ORAM that are created under backup `backup_ser1..6`
 - Runs aggregation tests: `run-test-sum`, `run-test-avg`, `run-test-max`, `run-test-min`.
 - Saves timings metrics for the above steps in the backups folder `backup_ser1..6`.
-- Saves query results in the Query Results folder.
+- Saves query results in the Query_Results folder.
 - If the user wishes to clean existing build outputs please invokde `make clean` in the `path_oram_Cloak_Query` folder. 
 
 Usage:
@@ -103,7 +94,7 @@ Cloak_Query_Implementation/Query_Processing.sh --gtest_filter=YourSuite.*
 
 Outputs:
 - Query results: `Cloak_Query_Implementation/Query_Result/...`
-  - For AVG, results are written into the per-query folder (e.g., `../Query_Result/AVGOR/avg_results.txt`) and a combined file (`../Query_Result/avg_results.txt`) if enabled in tests.
+  - For AVG, results are written into the per-query folder (e.g., `../Query_Result/AVGOR/avg_results.txt`) and a combined file (`../Query_Result/avg_results.txt`) if enabled in tests. The same is true for all other aggregation queries.
 
 ### SSS implementation
 Script: `SSS_Implementation/Query_Processing.sh`
