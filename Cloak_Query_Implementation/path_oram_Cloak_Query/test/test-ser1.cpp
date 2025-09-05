@@ -463,6 +463,10 @@ namespace CloakQueryPathORAM
 		auto oram = loadORAMAndShares();
 		details.gettingShares = oram->getPathRetrievalTime();
 
+		std::string resultDir = "../Query_Result/COUNTORQuery";
+		std::filesystem::create_directories(resultDir); // Ensure the folder exists
+		std::ofstream outFile(resultDir + "/COUNTOR_Result.txt");
+
 		// Start tracking the time for query translation
 		auto start = std::chrono::high_resolution_clock::now();
 
@@ -505,6 +509,12 @@ namespace CloakQueryPathORAM
 		details.shufflePaths = oram->getTotalReshuffleTime();
 		writeTimingMetric(details);
 
+		// Truncate and write result
+		{
+			std::ofstream out(resultDir + "/COUNTOR_Result.txt", std::ios::out | std::ios::trunc);
+			out << "The count of tuples containing either filter_id is: " << count << '\n';
+		}
+
 		std::cout << "Count of tuples containing either filter_id: " << count << std::endl;
 	}
 
@@ -521,6 +531,10 @@ namespace CloakQueryPathORAM
 		
 		auto oram = loadORAMAndShares();
 		details.gettingShares = oram->getPathRetrievalTime();
+		
+		std::string resultDir = "../Query_Result/COUNTANDQuery";
+		std::filesystem::create_directories(resultDir); // Ensure the folder exists
+		std::ofstream outFile(resultDir + "/COUNTAND_Result.txt");
 
 		// Start tracking the time for query translation
 		auto start = std::chrono::high_resolution_clock::now();
@@ -564,6 +578,11 @@ namespace CloakQueryPathORAM
 		details.shufflePaths = oram->getTotalReshuffleTime();
 		writeTimingMetric(details);
 
+		// Truncate and write result
+		{
+			std::ofstream out(resultDir + "/COUNTAND_Result.txt", std::ios::out | std::ios::trunc);
+			out << "The count of tuples containing both filter_ids is: " << count << '\n';
+		}
 		std::cout << "Count of tuples containing both filter_ids: " << count << std::endl;
 	}
 

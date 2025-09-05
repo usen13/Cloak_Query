@@ -1,6 +1,5 @@
-# Cloak_Query: Build, Data Outsourcing, and Query Processing
-
-This repository contains two runnable setups:
+# Cloak_Query: Data Outsourcing, and Query Processing
+This repository contains the implementation for Cloak_Query, an approach to ensure obfuscation as well as integrity during query execution. This repository contains two runnable setups:
 - Cloak_Query_Implementation (Path ORAM based)
 - SSS_Implementation (Shamir Secret Sharing based)
 
@@ -8,20 +7,50 @@ Both setups provide two Bash scripts each:
 - Data_Outsourcing.sh — builds and encrypts the input table to generate secret shares.
 - Query_Processing.sh — builds and runs server/query tests (including aggregation queries).
 
-## Prerequisites
-Install the following packages (Ubuntu/Debian example):
++ **WARNING: You must run Data_Outsourcing.sh before running Query_Processing.sh (for both implementations).**
++ If you do not run Data_Outsourcing.sh first, the implementation will not work and will cause errors (e.g., missing shares/backups, file-not-found failures).
 
+## Run with Docker (recommended for a clean toolchain)
+
+This repo includes a dev container recipe (Dockerfile.dev) that installs all build/test dependencies (g++, cmake, gtest/gmock, libsodium, OpenSSL, Boost, nlohmann-json, Python + sqlparse, gdb). It is recommend all code is executed inside the container to avoid missing dependencies.
+
+Build the image:
 ```bash
-sudo apt-get update
-sudo apt-get install -y build-essential cmake gdb \
-  libsodium-dev libssl-dev \
-  libgtest-dev
+docker build -f Dockerfile.dev -t |your docker image name| .
+# If you changed Dockerfile.dev, force rebuild:
+# docker build --no-cache -f Dockerfile.dev -t |your docker image name| .
 ```
 
-Notes:
-- GoogleTest headers are expected in `/usr/include/gtest` and libraries available to the linker (`-lgtest -lgtest_main`).
-- If you see linker errors for gtest, install `libgmock-dev` as well.
+Run the container (mount the repo and match your host UID/GID so files aren’t root-owned):
+```bash
+cd /path/to/Cloak_Query   # repo root
+docker run -it --rm \
+  -v "$PWD":/workspace/cloak_query \
+  -w /workspace/cloak_query \
+  --user "$(id -u)":"$(id -g)" \
+  cloak_query:dev bash
+```
 
+Inside the container, run the scripts as usual:
+```bash
+# Generate shares (Path ORAM)
+chmod +x Cloak_Query_Implementation/Data_Outsourcing.sh
+Cloak_Query_Implementation/Data_Outsourcing.sh  
+
+# Run ORAM servers + aggregation tests
+chmod +x Cloak_Query_Implementation/Query_Processing.sh
+Cloak_Query_Implementation/Query_Processing.sh  
+
+# SSS variant
+chmod +x SSS_Implementation/Data_Outsourcing.sh
+SSS_Implementation/Data_Outsourcing.sh
+
+chmod +x SSS_Implementation/Query_Processing.sh
+SSS_Implementation/Query_Processing.sh
+```
++ Note: **Run Data_Outsourcing.sh first**. Skipping it will result in errors during Query_Processing.sh because required shares/backup files won’t exist.
+
+Details on individual implementations follow below:
 ## Data Outsourcing (generate shares)
 
 ### Path ORAM implementation
@@ -31,13 +60,7 @@ What it does:
 - Builds `Shamir_Parser`.
 - Runs `./shamir_parser encrypt <input>` to generate server share files.
 - Builds `cpp-sql-server` which will be used to translate SQL queries.
-
-Usage:
-```bash
-chmod +x Cloak_Query_Implementation/Data_Outsourcing.sh
-# Default input is Shamir_Parser/lineitem_10MB.tbl
-Cloak_Query_Implementation/Data_Outsourcing.sh
-```
+- If the user wishes to clean existing build outputs they do so by invoking `make clean` in the above folders. 
 
 Outputs:
 - Shares dir: `Cloak_Query_Implementation/shares/` (files like `server_1.txt`, ...)
@@ -69,6 +92,7 @@ What it does:
 - Runs aggregation tests: `run-test-sum`, `run-test-avg`, `run-test-max`, `run-test-min`.
 - Saves timings metrics for the above steps in the backups folder `backup_ser1..6`.
 - Saves query results in the Query Results folder.
+- If the user wishes to clean existing build outputs please invokde `make clean` in the `path_oram_Cloak_Query` folder. 
 
 Usage:
 ```bash
@@ -95,9 +119,29 @@ Usage:
 chmod +x SSS_Implementation/Query_Processing.sh
 SSS_Implementation/Query_Processing.sh
 ```
+## Experiment Timing Metrics:
+Cloak_Query timing metrics can be found in the following paths:
+- For Shamir secret shares creation `Cloak_Query_Implementation/metrics`.
+- For Path ORAM related metrics (such as shuffling, MAC verification path retrieval) the metrics are located in the corresponding backup folder `backup_ser1..6`.
+SSS implementation timing metrics can be found in the following paths:
+- Query results as well as timing metrics for each query can be found in `SSS_Implementation/Query_Result_SSS` .
 
 ## Troubleshooting
+- For Docker:
+- Editing files: edit on the host (mounted into the container). If you prefer in-container editing: `apt-get update && apt-get install -y nano` (or `vim`).
+- Python sqlparse errors:
+  - The image installs sqlparse for Python 3 (`pip3 install sqlparse`). If tests call `python` instead of `python3`, either use `python3` or install `python-is-python3` in the image.
+  - Verify: `python3 -c "import sqlparse; print(sqlparse.__version__)"`.
+- GoogleTest/GoogleMock: Dockerfile.dev builds and installs the static libs from `/usr/src/googletest`. If you use a different base image, ensure `libgtest-dev libgmock-dev` are installed and built.
+- Git “dubious ownership” inside the container:
+  - Prefer running the container with `--user "$(id -u)":"$(id -g)"` (as shown).
+  - Or allow this path: `git config --global --add safe.directory /workspace/cloak_query`.
+- Permission denied when deleting outputs:
+  - Happens if files were created as root. Fix: `chown -R "$(id -u)":"(id -g)" <dir>` or always run the container with `--user "$(id -u)":"$(id -g)"`.
+- Rebuild the image after changing Dockerfile.dev:
+  - Use `--no-cache` to avoid stale layers.
 
+Other issues:
 - No rule to make target 'obj/…':
   - Ensure you are using the simplified `SSS_Implementation/Makefile` that builds directly from `test/*.cpp`.
 - Shares not found (e.g., "Error opening file: server_1.txt"):
@@ -118,7 +162,7 @@ SSS_Implementation/Query_Processing.sh
 - `SSS_Implementation/shares/` — generated shares (SSS)
 - `SSS_Implementation/cpp-sql-server/` — simialr SQL handler and query translator to the Cloak_Query implementation (SSS)
 
-## Quick start
+## Quick start in Docker container
 1) Generate shares (choose one):
 ```bash
 Cloak_Query_Implementation/Data_Outsourcing.sh
