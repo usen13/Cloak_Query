@@ -6,6 +6,8 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <math.h>
+#include <thread>
+#include <mutex>
 #include "../../cpp-sql-server/src/sql_handler.h"
 #include "../../cpp-sql-server/src/sql_utils.h"
 using json = nlohmann::json;

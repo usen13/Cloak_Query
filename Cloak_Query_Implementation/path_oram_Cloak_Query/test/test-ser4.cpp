@@ -6,6 +6,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <math.h>
+#include <mutex>
 #include <thread>
 #include "../../cpp-sql-server/src/sql_handler.h"
 #include "../../cpp-sql-server/src/sql_utils.h"
