@@ -2,6 +2,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <math.h>
+#include <mutex>
 #include <thread>
 #include <unordered_set>
 #include "../cpp-sql-server/src/sql_handler.h"
