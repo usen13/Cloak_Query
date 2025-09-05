@@ -4,25 +4,26 @@ LABEL maintainer="utsav.sen@stud.tu-darmstadt.de"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Installing build tools and dependencies
-RUN apt-get update && \
-    apt-get install -y build-essential cmake git libgtest-dev libgmock-dev libsodium-dev libboost-all-dev libssl-dev && \
-    cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib && \
-    rm -rf /var/lib/apt/lists/*
-
+# Toolchain, libs, and runtime deps
 RUN apt-get update && apt-get install -y \
-    build-essential cmake git \
+    build-essential cmake git gdb pkg-config \
     python3 python3-pip \
     libgtest-dev libgmock-dev \
     libsodium-dev libboost-all-dev libssl-dev \
-    nlohmann-json3-dev && \
-    cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib && \
-    rm -rf /var/lib/apt/lists/*
+    nlohmann-json3-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+# Build and install GoogleTest/GoogleMock static libs (Ubuntu 22.04 path)
+RUN cmake -S /usr/src/googletest -B /usr/src/googletest/build \
+ && cmake --build /usr/src/googletest/build \
+ && cp /usr/src/googletest/build/lib/*.a /usr/lib
+
+# Ensure sqlparse for Python 3
+RUN pip3 install --no-cache-dir sqlparse
 
 WORKDIR /workspace/cloak_query
 
-# Cloning the path-oram-base repository if needed
-RUN git clone https://github.com/usen13/Cloak_Query.git .
+# Use local source
+COPY . .
 
-# ...existing code...
-CMD ["tail", "-f", "/dev/null"]
+CMD ["bash"]

@@ -38,6 +38,13 @@ LIBNAME=pathoram
 # CLASS does not even have to be a class in C++.
 ENTITIES = storage-adapter position-map-adapter utility oram stash-adapter
 
+# Ensure build dirs exist
+$(ODIR):
+	mkdir	-p	$(ODIR)
+
+$(BDIR):
+	mkdir	-p	$(BDIR)
+
 # dependencies - definitions plus header files
 _DEPS = definitions.h $(addsuffix .hpp, $(ENTITIES))
 DEPS = $(patsubst %, $(IDIR)/%, $(_DEPS))
@@ -96,7 +103,7 @@ $(BENCHMARKSBIN): $(OBJ) $$(subst $$(BDIR), $(HDIR), $$@).cpp
 $(INTEGRATIONBIN): $(OBJ) $$(subst $$(BDIR), $(TDIR), $$@).cpp
 	$(ENTRYPOINTCC)
 
-$(TESTSER1): $(OBJ) $(TDIR)/test-ser1.cpp
+$(TESTSER1): $(OBJ) $(TDIR)/test-ser1.cpp	| $(BDIR)
 	$(ENTRYPOINTCC)
 
 run-test-ser1: $(TESTSER1)
@@ -225,7 +232,7 @@ shared: $(OBJ)
 
 # Rule to compile source files into object files
 
-$(ODIR)/%.o: $(SDIR)/%.cpp $(DEPS)
+$(ODIR)/%.o: $(SDIR)/%.cpp $(DEPS)	| $(ODIR)
 	$(CC) -c -o $@ $< $(CPPFLAGS) $(INCLUDES)
 
 # commands
@@ -270,7 +277,7 @@ docs: clean-docs
 
 clean: clean-docs clean-binaries
 	$(RM) $(ODIR)/* *~ *.dSYM *.gcov *.gcda *.gcno *.bin coverage-html junit-*.xml cobertura.xml
-	$(RM)	../backup	../backup_ser1	../backup_ser2	../backup_ser3	../backup_ser4	../backup_ser5	../backup_ser6	../Query_Result
+	$(RM)	../backup	../backup_ser1	../backup_ser2	../backup_ser3	../backup_ser4	../backup_ser5	../backup_ser6	../Query_Result	gdb-logs
 
 clean-docs:
 	$(RM) ../docs
