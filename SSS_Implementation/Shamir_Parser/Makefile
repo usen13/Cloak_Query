@@ -34,6 +34,7 @@ $(TARGET): $(OBJS)
 clean:
 	rm -f $(TARGET) $(OBJS)
 	find ../shares -maxdepth 1 -type f -name 'server_*.txt' -exec rm -f {} +
+	find ../metrics -maxdepth 1 -type f -name 'metrics.txt' -exec rm -f {} +
 #server_*.txt
 
 # Phony targets

@@ -691,7 +691,8 @@ namespace CloakQueryPathORAM
 		{
 			throw Exception("MAC not found for bucket ID: " + std::to_string(bucketId));
 		}
-		const bytes &storedMAC = it->second;
+		//const bytes &storedMAC = it->second;
+		
 		// Print the bucket ID
 		//std::cout << "Verifying MAC for bucket ID: " << bucketId << std::endl;
 

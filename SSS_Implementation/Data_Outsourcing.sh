@@ -18,6 +18,11 @@ else
   echo "Usage: $0 [input_file]"
   exit 1
 fi
+# Clean pre-existing binaries/outputs
+echo "[0/3] Cleaning previous builds and generated files..."
+make -C "$TOP_DIR/cpp-sql-server" clean || true
+make -C "$TOP_DIR" clean || true
+make -C "$TOP_DIR/Shamir_Parser" clean || true
 
 echo "[1/3] Building Shamir_Parser..."
 pushd "$TOP_DIR/Shamir_Parser" >/dev/null
